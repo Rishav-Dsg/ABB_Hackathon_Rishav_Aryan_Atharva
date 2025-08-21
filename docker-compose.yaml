@@ -1,0 +1,45 @@
+version: "3.8"
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-dotnet
+    environment:
+      - DATA_DIR=/data
+      - ML_SERVICE_URL=http://ml-service:8000
+      - ASPNETCORE_URLS=http://0.0.0.0:5000
+    ports:
+      - "5001:5000"
+    volumes:
+      - data_volume:/app/data
+    depends_on:
+      - ml-service
+    networks:
+      - intelli_net
+
+  ml-service:
+    build: ./ml-service
+    container_name: ml-service-python
+    environment:
+      - DATA_DIR=/data
+    ports:
+      - "8000:8000"
+    volumes:
+      - data_volume:/app/data
+    networks:
+      - intelli_net
+
+volumes:
+  data_volume:
+
+networks:
+  intelli_net:
+    driver: bridge
